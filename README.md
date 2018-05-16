@@ -71,3 +71,9 @@ Run local ftp server for testing
 
 Connect to it
 `curl -H "X-ftpproxy-port: 2121" -H "X-ftpproxy-user: yolo" -H "X-ftpproxy-host: localhost" localhost:5000/ftp/ping`
+
+### Upload to Pypi
+```bash
+pipenv run python setup.py sdist
+pipenv run python setup.py bdist_wheel
+```
