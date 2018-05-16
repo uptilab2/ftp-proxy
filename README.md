@@ -2,7 +2,7 @@
 Http proxy to interact with FTP servers
 
 ## Install
-`git clone git@github.com:uptilab2/ftp-proxy.git`
+``pip install ftp-proxy`
 
 ## Usage
 ### Using the python client
