@@ -6,12 +6,15 @@ https://github.com/pypa/sampleproject
 """
 
 # Always prefer setuptools over distutils
-from setuptools import setup, find_packages, Command
+from setuptools import setup, Command
 # To use a consistent encoding
 from codecs import open
 import os
 import sys
 from shutil import rmtree
+
+
+version = '0.0.5'
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -19,7 +22,6 @@ here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-about = {}
 
 class UploadCommand(Command):
     """Support setup.py publish."""
@@ -48,7 +50,7 @@ class UploadCommand(Command):
         self.status('Uploading the package to PyPi via Twine…')
         os.system('twine upload dist/*')
         self.status('Pushing git tags…')
-        os.system('git tag v{0}'.format(about['__version__']))
+        os.system('git tag v{0}'.format(version))
         os.system('git push --tags')
         sys.exit()
 
@@ -75,7 +77,7 @@ setup(
     # For a discussion on single-sourcing the version across setup.py and the
     # project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.0.2',  # Required
+    version=version,  # Required
 
     # This is a one-line description or tagline of what your project does. This
     # corresponds to the "Summary" metadata field:
@@ -102,7 +104,7 @@ setup(
     #
     # This field corresponds to the "Description-Content-Type" metadata field:
     # https://packaging.python.org/specifications/core-metadata/#description-content-type-optional
-    long_description_content_type='text/markdown',  # Optional (see note above)
+    #long_description_content_type='text/markdown',  # Optional (see note above)
 
     # This should be a valid link to your project's main homepage.
     #
@@ -197,7 +199,11 @@ setup(
     #
     # For example, the following would provide a command called `sample` which
     # executes the function `main` from this package when invoked:
-    entry_points={},
+    entry_points={
+        'console_scripts': [
+            'ftpproxy=ftp_proxy:cli',
+        ]
+    },
 
     # List additional URLs that are relevant to your project as a dict.
     #
@@ -211,4 +217,7 @@ setup(
     project_urls={  # Optional
         'Source': 'https://github.com/uptilab2/ftp_proxy',
     },
+    cmdclass={
+        'upload': UploadCommand,
+    }
 )

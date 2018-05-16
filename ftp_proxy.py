@@ -1,4 +1,5 @@
 
+import argparse
 from aiohttp import web
 
 import ftp
@@ -25,3 +26,13 @@ def init_func(argv=None):
     app.middlewares.append(error_middleware)
 
     return app
+
+
+def cli():
+    parser = argparse.ArgumentParser(description="aiohttp server example")
+    parser.add_argument('--path')
+    parser.add_argument('--port')
+
+    app = init_func()
+    args = parser.parse_args()
+    web.run_app(app, path=args.path, port=args.port)
