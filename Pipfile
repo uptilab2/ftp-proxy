@@ -7,6 +7,9 @@ name = "pypi"
 
 [dev-packages]
 
+pytest = "*"
+pytest-aiohttp = "*"
+"flake8" = "*"
 
 
 [packages]
