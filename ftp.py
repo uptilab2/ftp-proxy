@@ -19,7 +19,11 @@ class FtpError(FtpProxyError):
         self.message = ftp_error.info
 
 
+FTP_TIMEOUT = 5
+
+
 def parse_headers(request):
+    """Parse generic authentication headers common to all routes"""
     host = request.headers.get('X-ftpproxy-host')
     if host is None:
         raise MissingHostHeader
@@ -35,11 +39,11 @@ async def ping(request):
     """
     host, port, login, password = parse_headers(request)
     try:
-        async with aioftp.ClientSession(host, port, login, password, socket_timeout=3, path_timeout=3) as client:
-            async for _ in client.list('/'):
+        async with aioftp.ClientSession(host, port, login, password, socket_timeout=FTP_TIMEOUT, path_timeout=FTP_TIMEOUT) as client:
+            async for _ in client.list('/'):  # noqa
                 # Iterate once if any result, only list command matters not the results
                 break
-            return web.Response(text='pong')
+            return web.json_response({'success': True})
     except (OSError, asyncio.TimeoutError, TimeoutError):
         raise ServerUnreachable
     except aioftp.errors.StatusCodeError as ftp_error:
@@ -63,7 +67,7 @@ async def ls(request):
     directories = []
 
     try:
-        async with aioftp.ClientSession(host, port, login, password, socket_timeout=3, path_timeout=3) as client:
+        async with aioftp.ClientSession(host, port, login, password, socket_timeout=FTP_TIMEOUT, path_timeout=FTP_TIMEOUT) as client:
             async for path, info in client.list(root_path, recursive=recursive):
                 if info['type'] == 'dir' and extension is None:
                     directories.append(str(path))
@@ -83,7 +87,7 @@ async def download(request):
 
     path = request.query.get('path', '/')
     try:
-        async with aioftp.ClientSession(host, port, login, password, socket_timeout=3, path_timeout=3) as client:
+        async with aioftp.ClientSession(host, port, login, password, socket_timeout=FTP_TIMEOUT, path_timeout=FTP_TIMEOUT) as client:
             ftp_stream = await client.download_stream(path)
 
             response = web.StreamResponse()

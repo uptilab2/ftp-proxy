@@ -14,8 +14,13 @@ def client(aiohttp_client, loop):
 
 class FtpServer():
     """Provide testing ftp server as an async context manager"""
-    def __init__(self, loop, host='localhost', port=2221):
-        self.server = aioftp.Server(loop=loop)
+    def __init__(self, loop, host='localhost', port=2221, user=None, password=None):
+        if user:
+            users = aioftp.User(user, password),
+            self.server = aioftp.Server(users, loop=loop)
+        else:
+            # Setup server with anonymous login
+            self.server = aioftp.Server(loop=loop)
         self.host = host
         self.port = port
 
@@ -48,3 +53,14 @@ class TestFtpPing:
         resp = await client.get('/ftp/ping')
         assert resp.status == 400
         assert await resp.json() == {'error': 'Missing mandatory X-ftpproxy-host header'}
+
+    async def test_invalid_credentials(self, client, loop):
+        async with FtpServer(loop, host='localhost', port=2221, user='someone'):
+            headers = {
+                'X-ftpproxy-host': 'localhost',
+                'X-ftpproxy-port': '2221',
+                'X-ftpproxy-user': 'roger',
+            }
+            resp = await client.get('/ftp/ping', headers=headers)
+            assert resp.status == 400
+            assert await resp.json() == {'error': [' no such username']}

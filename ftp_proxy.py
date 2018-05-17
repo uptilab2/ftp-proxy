@@ -3,15 +3,7 @@ import argparse
 from aiohttp import web
 
 import ftp
-from errors import FtpProxyError
-
-
-@web.middleware
-async def error_middleware(request, handler):
-    try:
-        return await handler(request)
-    except FtpProxyError as error:
-        return web.json_response({'error': error.message}, status=400)
+from errors import error_middleware
 
 
 def init_func(argv=None):
