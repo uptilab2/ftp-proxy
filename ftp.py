@@ -16,7 +16,12 @@ class ServerUnreachable(FtpProxyError):
 
 class FtpError(FtpProxyError):
     def __init__(self, ftp_error):
-        self.message = ftp_error.info
+        self.message = '\n'.join([info.strip() for info in ftp_error.info])
+
+
+class MissingMandatoryQueryParameter(FtpProxyError):
+    def __init__(self, param_name):
+        self.message = f'Missing mandatory query parameter: {param_name}'
 
 
 FTP_TIMEOUT = 5
@@ -85,7 +90,9 @@ async def ls(request):
 async def download(request):
     host, port, login, password = parse_headers(request)
 
-    path = request.query.get('path', '/')
+    path = request.query.get('path')
+    if not path:
+        raise MissingMandatoryQueryParameter('path')
     try:
         async with aioftp.ClientSession(host, port, login, password, socket_timeout=FTP_TIMEOUT, path_timeout=FTP_TIMEOUT) as client:
             ftp_stream = await client.download_stream(path)
