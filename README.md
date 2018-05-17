@@ -1,4 +1,4 @@
-# ftp-proxy
+# ftp-proxy ![travis](https://travis-ci.com/uptilab2/ftp-proxy.svg?branch=master)
 Http proxy to interact with FTP servers
 
 ## Install
