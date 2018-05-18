@@ -28,11 +28,13 @@ def init_func(argv=None):
     return app
 
 
+app = init_func()
+
+
 def cli():
     parser = argparse.ArgumentParser(description="aiohttp server example")
-    parser.add_argument('--path')
-    parser.add_argument('--port')
+    parser.add_argument('--host', default='0.0.0.0')
+    parser.add_argument('--port', default=2121, type=int)
 
-    app = init_func()
     args = parser.parse_args()
     web.run_app(app, path=args.path, port=args.port)
