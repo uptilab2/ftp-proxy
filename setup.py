@@ -14,7 +14,7 @@ import sys
 from shutil import rmtree
 
 
-version = '0.0.5'
+version = '0.0.6'
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -65,7 +65,6 @@ class UploadCommand(Command):
 # Arguments marked as "Required" below must be included for upload to PyPI.
 # Fields marked as "Optional" may be commented out.
 
-
 setup(
     # This is the name of your project. The first time you publish this
     # package, this name will be registered for you. It will determine how
@@ -113,7 +112,7 @@ setup(
     #
     # This field corresponds to the "Description-Content-Type" metadata field:
     # https://packaging.python.org/specifications/core-metadata/#description-content-type-optional
-    # long_description_content_type='text/markdown',  # Optional (see note above)
+    #long_description_content_type='text/markdown',  # Optional (see note above)
 
     # This should be a valid link to your project's main homepage.
     #
