@@ -49,9 +49,17 @@ class UploadCommand(Command):
         os.system('{0} setup.py sdist bdist_wheel'.format(sys.executable))
         self.status('Uploading the package to PyPi via Twine…')
         os.system('twine upload dist/*')
+
         self.status('Pushing git tags…')
         os.system('git tag v{0}'.format(version))
         os.system('git push --tags')
+
+        self.status('Pushing docker images…')
+        os.system('docker build . -t emilecaron/ftp-proxy:{}-alpine'.format(version))
+        os.system('docker push emilecaron/ftp-proxy:{}-alpine'.format(version))
+        os.system('docker build . -t emilecaron/ftp-proxy:latest')
+        os.system('docker push emilecaron/ftp-proxy:latest')
+
         sys.exit()
 
 # Arguments marked as "Required" below must be included for upload to PyPI.
