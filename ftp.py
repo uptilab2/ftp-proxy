@@ -3,25 +3,12 @@ import aioftp
 from aiohttp import web
 import asyncio
 
-from errors import FtpProxyError
+from errors import FtpProxyError, MissingHostHeader, ServerUnreachable, MissingMandatoryQueryParameter
 
 
-class MissingHostHeader(FtpProxyError):
-    message = 'Missing mandatory X-ftpproxy-host header'
-
-
-class ServerUnreachable(FtpProxyError):
-    message = 'Failed connecting to FTP server'
-
-
-class FtpError(FtpProxyError):
+class AioftpError(FtpProxyError):
     def __init__(self, ftp_error):
         self.message = '\n'.join([info.strip() for info in ftp_error.info])
-
-
-class MissingMandatoryQueryParameter(FtpProxyError):
-    def __init__(self, param_name):
-        self.message = f'Missing mandatory query parameter: {param_name}'
 
 
 FTP_TIMEOUT = 5
@@ -52,7 +39,7 @@ async def ping(request):
     except (OSError, asyncio.TimeoutError, TimeoutError):
         raise ServerUnreachable
     except aioftp.errors.StatusCodeError as ftp_error:
-        raise FtpError(ftp_error)
+        raise AioftpError(ftp_error)
 
 
 async def ls(request):
@@ -82,7 +69,7 @@ async def ls(request):
     except (OSError, asyncio.TimeoutError, TimeoutError):
         raise ServerUnreachable
     except aioftp.errors.StatusCodeError as ftp_error:
-        raise FtpError(ftp_error)
+        raise AioftpError(ftp_error)
 
     return web.json_response({'files': files, 'directories': directories})
 
@@ -106,4 +93,4 @@ async def download(request):
     except (OSError, asyncio.TimeoutError, TimeoutError):
         raise ServerUnreachable
     except aioftp.errors.StatusCodeError as ftp_error:
-        raise FtpError(ftp_error)
+        raise AioftpError(ftp_error)

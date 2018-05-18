@@ -3,6 +3,7 @@ import argparse
 from aiohttp import web
 
 import ftp
+import sftp
 from errors import error_middleware
 
 
@@ -13,6 +14,8 @@ def init_func(argv=None):
     app.add_routes([web.get('/ftp/ping', ftp.ping)])
     app.add_routes([web.get('/ftp/ls', ftp.ls)])
     app.add_routes([web.get('/ftp/download', ftp.download)])
+
+    app.add_routes([web.get('/sftp/ping', sftp.ping)])
 
     # Setup middleware
     app.middlewares.append(error_middleware)
