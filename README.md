@@ -2,11 +2,14 @@
 Http proxy to interact with FTP servers
 
 ## Install
-``pip install ftp-proxy`
+`pip install ftp-proxy`
+
+## Deployment
+Use the provided [docker image](https://hub.docker.com/r/emilecaron/ftp-proxy)
 
 ## Usage
 ### Using the python client
-See client repository `https://github.com/uptilab2/ftp-proxy-client`
+See [client repository](https://github.com/uptilab2/ftp-proxy-client)
 
 ### Using an http client
 ftp-proxy can be used with any http client
