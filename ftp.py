@@ -50,11 +50,8 @@ async def ls(request):
     try:
         async with aioftp.ClientSession(host, port, login, password, socket_timeout=FTP_TIMEOUT, path_timeout=FTP_TIMEOUT) as client:
             async for path, info in client.list(root_path, recursive=recursive):
-                if info['type'] == 'dir' and extension is None:
+                if extension is None or path.suffix == extension:
                     files.append(str(path))
-                elif info['type'] == 'file':
-                    if extension is None or path.suffix == extension:
-                        files.append(str(path))
     except (OSError, asyncio.TimeoutError, TimeoutError):
         raise ServerUnreachable
     except aioftp.errors.StatusCodeError as ftp_error:

@@ -39,10 +39,7 @@ Optional parameters:
 
 Response:
 ```javascript
-{
-    "files": ["file1.txt", "other.py", "folder/nested.txt"],
-    "directories": ["folder", "folder/subfolder"]
-}
+["/file1.txt", "/other.py", "/folder", "/folder/nested.txt", "/folder/subfolder"]
 ```
 
 ##### Download (/ftp/download)
@@ -50,6 +47,11 @@ Download a file from the ftp server
 Mandatory parameters:
 - path (string): path to file to download
 
+##### SFTP support
+SFTP support API is roughly the same as ftp, and can be achieved by switching the url prefixes from ftp to sftp
+The following features are not yet available for SFTP:
+- recursive listing
+- extension filtering
 
 #### Errors
 If an error occured on the proxy or the FTP server, the request will return a HTTP 400 json response with the following format
