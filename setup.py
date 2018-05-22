@@ -14,7 +14,7 @@ import sys
 from shutil import rmtree
 
 
-version = '0.0.6'
+version = '0.0.7'
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -166,7 +166,7 @@ setup(
     #
     #   py_modules=["my_module"],
     #
-    py_modules=["ftp_proxy", "ftp", "errors"],
+    py_modules=["ftp_proxy", "ftp", "sftp", "utils", "errors"],
 
     # This field lists other packages that your project depends on to run.
     # Any package you put here will be installed by pip when your project is

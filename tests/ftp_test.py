@@ -65,10 +65,10 @@ class TestFtpLs:
             response_data = await resp.json()
 
             assert resp.status == 200
-            assert '/README.md' in response_data['files']
-            assert '/ftp_proxy.py' in response_data['files']
-            assert '/tests' in response_data['directories']
-            assert '/tests/integration_test.py' not in response_data['directories']
+            assert '/README.md' in response_data
+            assert '/ftp_proxy.py' in response_data
+            assert '/tests' in response_data
+            assert '/tests/ftp_test.py' not in response_data
 
     async def test_path(self, client, loop):
         async with FtpServer(loop, host='localhost', port=2221):
@@ -79,8 +79,8 @@ class TestFtpLs:
             response_data = await resp.json()
 
             assert resp.status == 200
-            assert response_data['directories'] == []
-            assert response_data['files'] == ['/tests/integration_test.py']
+            assert '/tests' not in response_data
+            assert '/tests/ftp_test.py' in response_data
 
     async def test_recursive(self, client, loop):
         async with FtpServer(loop, host='localhost', port=2221):
@@ -91,10 +91,10 @@ class TestFtpLs:
             response_data = await resp.json()
 
             assert resp.status == 200
-            assert '/README.md' in response_data['files']
-            assert '/ftp_proxy.py' in response_data['files']
-            assert '/tests/integration_test.py' in response_data['files']
-            assert '/tests' in response_data['directories']
+            assert '/README.md' in response_data
+            assert '/ftp_proxy.py' in response_data
+            assert '/tests/ftp_test.py' in response_data
+            assert '/tests' in response_data
 
     async def test_extension(self, client, loop):
         async with FtpServer(loop, host='localhost', port=2221):
@@ -105,17 +105,17 @@ class TestFtpLs:
             response_data = await resp.json()
 
             assert resp.status == 200
-            assert '/README.md' not in response_data['files']
-            assert '/ftp_proxy.py' in response_data['files']
-            assert '/tests/integration_test.py' in response_data['files']
-            assert response_data['directories'] == []
+            assert '/README.md' not in response_data
+            assert '/ftp_proxy.py' in response_data
+            assert '/tests/ftp_test.py' in response_data
+            assert '/tests' not in response_data
 
 
 class TestFtpDownload:
     async def test_default(self, client, loop):
         async with FtpServer(loop, host='localhost', port=2221):
             headers = {'X-ftpproxy-host': 'localhost', 'X-ftpproxy-port': '2221'}
-            params = {'path': '/tests/integration_test.py'}
+            params = {'path': '/tests/ftp_test.py'}
 
             resp = await client.get('/ftp/download', headers=headers, params=params)
             file_content = await resp.content.read()

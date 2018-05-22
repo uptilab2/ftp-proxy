@@ -3,39 +3,16 @@ import aioftp
 from aiohttp import web
 import asyncio
 
-from errors import FtpProxyError
+from utils import parse_headers
+from errors import FtpProxyError, ServerUnreachable, MissingMandatoryQueryParameter
 
 
-class MissingHostHeader(FtpProxyError):
-    message = 'Missing mandatory X-ftpproxy-host header'
-
-
-class ServerUnreachable(FtpProxyError):
-    message = 'Failed connecting to FTP server'
-
-
-class FtpError(FtpProxyError):
+class AioftpError(FtpProxyError):
     def __init__(self, ftp_error):
         self.message = '\n'.join([info.strip() for info in ftp_error.info])
 
 
-class MissingMandatoryQueryParameter(FtpProxyError):
-    def __init__(self, param_name):
-        self.message = f'Missing mandatory query parameter: {param_name}'
-
-
 FTP_TIMEOUT = 5
-
-
-def parse_headers(request):
-    """Parse generic authentication headers common to all routes"""
-    host = request.headers.get('X-ftpproxy-host')
-    if host is None:
-        raise MissingHostHeader
-    port = request.headers.get('X-ftpproxy-port', 21)
-    user = request.headers.get('X-ftpproxy-user', 'anonymous')
-    password = request.headers.get('X-ftpproxy-password', '')
-    return host, port, user, password
 
 
 async def ping(request):
@@ -52,7 +29,7 @@ async def ping(request):
     except (OSError, asyncio.TimeoutError, TimeoutError):
         raise ServerUnreachable
     except aioftp.errors.StatusCodeError as ftp_error:
-        raise FtpError(ftp_error)
+        raise AioftpError(ftp_error)
 
 
 async def ls(request):
@@ -69,22 +46,18 @@ async def ls(request):
     extension = request.query.get('extension')
 
     files = []
-    directories = []
 
     try:
         async with aioftp.ClientSession(host, port, login, password, socket_timeout=FTP_TIMEOUT, path_timeout=FTP_TIMEOUT) as client:
             async for path, info in client.list(root_path, recursive=recursive):
-                if info['type'] == 'dir' and extension is None:
-                    directories.append(str(path))
-                elif info['type'] == 'file':
-                    if extension is None or path.suffix == extension:
-                        files.append(str(path))
+                if extension is None or path.suffix == extension:
+                    files.append(str(path))
     except (OSError, asyncio.TimeoutError, TimeoutError):
         raise ServerUnreachable
     except aioftp.errors.StatusCodeError as ftp_error:
-        raise FtpError(ftp_error)
+        raise AioftpError(ftp_error)
 
-    return web.json_response({'files': files, 'directories': directories})
+    return web.json_response(files)
 
 
 async def download(request):
@@ -106,4 +79,4 @@ async def download(request):
     except (OSError, asyncio.TimeoutError, TimeoutError):
         raise ServerUnreachable
     except aioftp.errors.StatusCodeError as ftp_error:
-        raise FtpError(ftp_error)
+        raise AioftpError(ftp_error)

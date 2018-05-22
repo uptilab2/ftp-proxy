@@ -16,6 +16,7 @@ pytest-aiohttp = "*"
 
 aiohttp = "*"
 aioftp = "*"
+asyncssh = "*"
 
 
 [requires]
