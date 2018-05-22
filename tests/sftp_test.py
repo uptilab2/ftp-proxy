@@ -140,6 +140,21 @@ class TestSftpLs:
         assert '/tests/ftp_test.py' in response_data
         assert '/tests/sftp_test.py' in response_data
 
+    async def test_invalid_path(self, client, sftp_server):
+        headers = {
+            'X-ftpproxy-host': 'localhost',
+            'X-ftpproxy-port': '8022',
+            'X-ftpproxy-user': 'foo',
+            'X-ftpproxy-password': 'password',
+        }
+        params = {
+            'path': '/foo'
+        }
+
+        resp = await client.get('/sftp/ls', headers=headers, params=params)
+        assert resp.status == 400
+        assert await resp.json() == {'error': 'No such file or directory'}
+
 
 class TestSftpDownload:
     async def test_default(self, client, sftp_server):
