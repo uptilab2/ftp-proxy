@@ -28,7 +28,7 @@ async def ping(request):
             async with conn.start_sftp_client() as sftp:
                 print(await sftp.listdir('.'))
                 return web.json_response({'success': True})
-    except (asyncssh.misc.DisconnectError, asyncssh.misc.ChannelOpenError) as exc:
+    except asyncssh.misc.Error as exc:
         raise AsyncsshError(exc)
     except OSError:
         raise ServerUnreachable
@@ -38,17 +38,20 @@ async def ping(request):
 async def ls(request):
     """
     :param path: (optional) Path to list
+    :param extension: (optional) Filter by extension
     """
     host, port, username, password = parse_headers(request, default_user=None, default_port=22)
     path = request.query.get('path', '')
     path = path.rstrip('/') + '/'
+    extension = request.query.get('extension', '')
 
     try:
         async with asyncssh.connect(host, port=port, username=username, password=password, known_hosts=None) as conn:
             async with conn.start_sftp_client() as sftp:
-                files = [f'{path}{f}' for f in await sftp.listdir(path) if f not in ('.', '..')]
+                files = [f'{path}{f}' for f in await sftp.listdir(path)
+                         if f not in ('.', '..') and (not extension or f.endswith(extension))]
                 return web.json_response(files)
-    except (asyncssh.misc.DisconnectError, asyncssh.misc.ChannelOpenError) as exc:
+    except asyncssh.misc.Error as exc:
         raise AsyncsshError(exc)
     except OSError:
         raise ServerUnreachable
@@ -79,7 +82,7 @@ async def download(request):
 
                     return response
 
-    except (asyncssh.misc.DisconnectError, asyncssh.misc.ChannelOpenError) as exc:
+    except asyncssh.misc.Error as exc:
         raise AsyncsshError(exc)
     except OSError:
         raise ServerUnreachable
