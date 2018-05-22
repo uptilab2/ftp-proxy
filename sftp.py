@@ -25,8 +25,7 @@ async def ping(request):
     try:
         # known_hosts explicitly disabled
         async with asyncssh.connect(host, port=port, username=username, password=password, known_hosts=None) as conn:
-            async with conn.start_sftp_client() as sftp:
-                print(await sftp.listdir('.'))
+            async with conn.start_sftp_client():
                 return web.json_response({'success': True})
     except asyncssh.misc.Error as exc:
         raise AsyncsshError(exc)
