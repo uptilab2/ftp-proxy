@@ -3,7 +3,8 @@ import aioftp
 from aiohttp import web
 import asyncio
 
-from errors import FtpProxyError, MissingHostHeader, ServerUnreachable, MissingMandatoryQueryParameter
+from utils import parse_headers
+from errors import FtpProxyError, ServerUnreachable, MissingMandatoryQueryParameter
 
 
 class AioftpError(FtpProxyError):
@@ -12,17 +13,6 @@ class AioftpError(FtpProxyError):
 
 
 FTP_TIMEOUT = 5
-
-
-def parse_headers(request):
-    """Parse generic authentication headers common to all routes"""
-    host = request.headers.get('X-ftpproxy-host')
-    if host is None:
-        raise MissingHostHeader
-    port = request.headers.get('X-ftpproxy-port', 21)
-    user = request.headers.get('X-ftpproxy-user', 'anonymous')
-    password = request.headers.get('X-ftpproxy-password', '')
-    return host, port, user, password
 
 
 async def ping(request):
@@ -56,13 +46,12 @@ async def ls(request):
     extension = request.query.get('extension')
 
     files = []
-    directories = []
 
     try:
         async with aioftp.ClientSession(host, port, login, password, socket_timeout=FTP_TIMEOUT, path_timeout=FTP_TIMEOUT) as client:
             async for path, info in client.list(root_path, recursive=recursive):
                 if info['type'] == 'dir' and extension is None:
-                    directories.append(str(path))
+                    files.append(str(path))
                 elif info['type'] == 'file':
                     if extension is None or path.suffix == extension:
                         files.append(str(path))
@@ -71,7 +60,7 @@ async def ls(request):
     except aioftp.errors.StatusCodeError as ftp_error:
         raise AioftpError(ftp_error)
 
-    return web.json_response({'files': files, 'directories': directories})
+    return web.json_response(files)
 
 
 async def download(request):

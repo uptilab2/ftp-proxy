@@ -16,6 +16,7 @@ def init_func(argv=None):
     app.add_routes([web.get('/ftp/download', ftp.download)])
 
     app.add_routes([web.get('/sftp/ping', sftp.ping)])
+    app.add_routes([web.get('/sftp/ls', sftp.ls)])
 
     # Setup middleware
     app.middlewares.append(error_middleware)

@@ -19,6 +19,14 @@ class MissingHostHeader(FtpProxyError):
     message = 'Missing mandatory X-ftpproxy-host header'
 
 
+class MissingUserHeader(FtpProxyError):
+    message = 'Missing mandatory X-ftpproxy-user header'
+
+
+class InvalidPortHeader(FtpProxyError):
+    message = 'Invalid X-ftpproxy-port header'
+
+
 class ServerUnreachable(FtpProxyError):
     message = 'Failed connecting to FTP server'
 

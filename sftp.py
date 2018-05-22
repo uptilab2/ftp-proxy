@@ -1,52 +1,53 @@
 
 from aiohttp import web
-import asyncio
+import asyncssh
 
-from errors import FtpProxyError, MissingHostHeader, ServerUnreachable, MissingMandatoryQueryParameter
+from utils import parse_headers, asyncio_timeout
+from errors import FtpProxyError, ServerUnreachable
 
 
 SFTP_TIMEOUT = 5
 
 
-#class AioftpError(FtpProxyError):
-#    def __init__(self, ftp_error):
-#        self.message = '\n'.join([info.strip() for info in ftp_error.info])
+class AsyncsshError(FtpProxyError):
+    def __init__(self, error):
+        self.message = error.reason
 
 
-#FTP_TIMEOUT = 5
-
-
-def parse_headers(request):
-    """Parse generic authentication headers common to all routes"""
-    host = request.headers.get('X-ftpproxy-host')
-    if host is None:
-        raise MissingHostHeader
-    port = request.headers.get('X-ftpproxy-port', 21)
-    user = request.headers.get('X-ftpproxy-user', 'anonymous')
-    password = request.headers.get('X-ftpproxy-password', '')
-    return host, port, user, password
-
-
+@asyncio_timeout(SFTP_TIMEOUT)
 async def ping(request):
-    future = _ping(request)
-    try:
-        # Shield inside a timeout
-        return await asyncio.wait_for(future, SFTP_TIMEOUT)
-    except asyncio.TimeoutError:
-        raise ServerUnreachable  # TODO change error message ftom FTP to SFTP
-
-async def _ping(request):
     """test SFTP connection by sending a minimal LS command
     returns "pong" on success
     """
-    import asyncssh
-    host = 'test.rebex.net'
-    username = 'demo'
-    password = 'password'
-    # port = 21
+    host, port, username, password = parse_headers(request, default_user=None, default_port=22)
 
-    async with asyncssh.connect(host, username=username, password=password) as conn:
-        async with conn.start_sftp_client() as sftp:
-            return web.json_response({'success': True})
-            files = await sftp.listdir('/')
-            return web.json_response(files)
+    try:
+        # known_hosts explicitly disabled
+        async with asyncssh.connect(host, port=port, username=username, password=password, known_hosts=None) as conn:
+            async with conn.start_sftp_client() as sftp:
+                print(await sftp.listdir('.'))
+                return web.json_response({'success': True})
+    except (asyncssh.misc.DisconnectError, asyncssh.misc.ChannelOpenError) as exc:
+        raise AsyncsshError(exc)
+    except OSError:
+        raise ServerUnreachable
+
+
+@asyncio_timeout(SFTP_TIMEOUT)
+async def ls(request):
+    """
+    :param path: (optional) Path to list
+    """
+    host, port, username, password = parse_headers(request, default_user=None, default_port=22)
+    path = request.query.get('path', '')
+    path = path.rstrip('/') + '/'
+
+    try:
+        async with asyncssh.connect(host, port=port, username=username, password=password, known_hosts=None) as conn:
+            async with conn.start_sftp_client() as sftp:
+                files = [f'{path}{f}' for f in await sftp.listdir(path) if f not in ('.', '..')]
+                return web.json_response(files)
+    except (asyncssh.misc.DisconnectError, asyncssh.misc.ChannelOpenError) as exc:
+        raise AsyncsshError(exc)
+    except OSError:
+        raise ServerUnreachable
