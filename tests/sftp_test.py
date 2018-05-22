@@ -100,3 +100,21 @@ class TestSftpLs:
         assert '/ftp_proxy.py' in response_data
         assert '/tests' in response_data
         assert '/tests/sft_test.py' not in response_data
+
+
+class TestSftpDownload:
+    async def test_default(self, client, sftp_server):
+        params = {'path': '/tests/sftp_test.py'}
+        headers = {
+            'X-ftpproxy-host': 'localhost',
+            'X-ftpproxy-port': '8022',
+            'X-ftpproxy-user': 'foo',
+            'X-ftpproxy-password': 'password',
+        }
+
+        resp = await client.get('/sftp/download', headers=headers, params=params)
+        file_content = await resp.content.read()
+
+        assert resp.content_type == 'application/octet-stream'
+        assert b'class TestSftpDownload:' in file_content
+        assert resp.status == 200
