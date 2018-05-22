@@ -4,7 +4,7 @@ FROM python:3.6-alpine
 MAINTAINER Emile Caron
 
 
-RUN pip install --no-cache gunicorn ftp-proxy
+RUN pip install --no-cache gunicorn ftp-proxy==$VERSION
 
 EXPOSE 2121
 
