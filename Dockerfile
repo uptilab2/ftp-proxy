@@ -3,7 +3,7 @@ FROM python:3.6-alpine
 
 MAINTAINER Emile Caron
 
-
+ARG VERSION
 RUN pip install --no-cache gunicorn ftp-proxy==$VERSION
 
 EXPOSE 2121
