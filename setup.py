@@ -55,9 +55,9 @@ class UploadCommand(Command):
         os.system('git push --tags')
 
         self.status('Pushing docker images…')
-        self.status('docker build . -t emilecaron/ftp-proxy:{0}-alpine --build-arg VERSION={0}'.format(version))
-        os.system('docker build . -t emilecaron/ftp-proxy:{0}-alpine --build-arg VERSION={0}'.format(version))
-        os.system('docker push emilecaron/ftp-proxy:{}-alpine'.format(version))
+        self.status('docker build . -t emilecaron/ftp-proxy:{0} --build-arg VERSION={0}'.format(version))
+        os.system('docker build . -t emilecaron/ftp-proxy:{0} --build-arg VERSION={0}'.format(version))
+        os.system('docker push emilecaron/ftp-proxy:{}'.format(version))
         os.system('docker build . -t emilecaron/ftp-proxy:latest --build-arg VERSION={0}'.format(version))
         os.system('docker push emilecaron/ftp-proxy:latest')
 
