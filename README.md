@@ -77,3 +77,11 @@ pipenv run py.test
 # Run the development server:
 pipenv run python -m aiohttp.web -H 0.0.0.0 -P 5000 ftp_proxy:init_func
 ```
+
+## Deployment
+```
+ pipenv run python setup.py test
+ pipenv run python setup.py sdist
+ pipenv run python setup.py bdist_wheel
+ pipenv run python setup.py upload
+```
