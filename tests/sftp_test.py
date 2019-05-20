@@ -184,4 +184,4 @@ class TestSftpDownload:
 
         resp = await client.get('/sftp/download', headers=headers, params=params)
         assert resp.status == 400
-        assert await resp.json() == {'error': 'Unable to download file'}
+        assert await resp.json() == {'error': 'Is a directory'}

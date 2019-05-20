@@ -12,10 +12,7 @@ async def error_middleware(request, handler):
 
 class FtpProxyError(Exception):
     """Base exception class caught for every route"""
-    message = ''
-
-    def __init__(self, message=None):
-        self.message = message or self.message
+    pass
 
 
 class MissingHostHeader(FtpProxyError):
