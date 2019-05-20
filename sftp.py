@@ -1,6 +1,7 @@
 
 from aiohttp import web
 import asyncssh
+import io
 
 from utils import parse_headers, asyncio_timeout
 from errors import FtpProxyError, ServerUnreachable, MissingMandatoryQueryParameter
@@ -71,16 +72,20 @@ async def download(request):
                                     keepalive_interval=1, keepalive_count_max=60) as conn:
             async with conn.start_sftp_client() as sftp:
                 async with sftp.open(path, 'rb') as fp:
-                    response = web.StreamResponse()
-                    response.content_type = 'application/octet-stream'
-                    await response.prepare(request)
-
+                    # Write file to buffer
+                    buf = io.BytesIO()
                     chunk = await fp.read(CHUNK_SIZE)
                     while chunk:
-                        await response.write(chunk)
+                        buf.write(chunk)
                         chunk = await fp.read(CHUNK_SIZE)
 
-                    return response
+        # Send buffer content to client
+        response = web.StreamResponse()
+        response.content_type = 'application/octet-stream'
+        await response.prepare(request)
+        buf.seek(0)
+        await response.write(buf.read())
+        return response
 
     except asyncssh.misc.Error as exc:
         raise AsyncsshError(exc)
