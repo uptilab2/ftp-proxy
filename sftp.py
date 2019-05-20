@@ -77,7 +77,10 @@ async def download(request):
                     chunk = await fp.read(CHUNK_SIZE)
                     while chunk:
                         buf.write(chunk)
-                        chunk = await fp.read(CHUNK_SIZE)
+                        try:
+                            chunk = await fp.read(CHUNK_SIZE)
+                        except:
+                            chunk = None
 
         # Send buffer content to client
         response = web.StreamResponse()
