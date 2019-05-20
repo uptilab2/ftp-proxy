@@ -14,7 +14,7 @@ import sys
 from shutil import rmtree
 
 
-version = '0.0.9'
+version = '0.0.10'
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -103,6 +103,7 @@ setup(
     # This field corresponds to the "Description" metadata field:
     # https://packaging.python.org/specifications/core-metadata/#description-optional
     long_description=long_description,  # Optional
+    long_description_content_type='text/markdown',
 
     # Denotes that our long_description is in Markdown; valid values are
     # text/plain, text/x-rst, and text/markdown
