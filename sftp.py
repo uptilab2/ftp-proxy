@@ -6,7 +6,7 @@ from utils import parse_headers, asyncio_timeout
 from errors import FtpProxyError, ServerUnreachable, MissingMandatoryQueryParameter
 
 
-SFTP_TIMEOUT = 20
+SFTP_TIMEOUT = 60
 CHUNK_SIZE = 8192
 
 
