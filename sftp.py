@@ -13,7 +13,7 @@ CHUNK_SIZE = 8192
 
 class AsyncsshError(FtpProxyError):
     def __init__(self, error):
-        self.message = error.reason
+        super().__init__(error.reason)
 
 
 @asyncio_timeout(SFTP_TIMEOUT)
@@ -67,30 +67,25 @@ async def download(request):
     if not path:
         raise MissingMandatoryQueryParameter('path')
 
+    buf = io.BytesIO()
     try:
         async with asyncssh.connect(host, port=port, username=username, password=password, known_hosts=None,
                                     keepalive_interval=1, keepalive_count_max=60) as conn:
             async with conn.start_sftp_client() as sftp:
                 async with sftp.open(path, 'rb') as fp:
                     # Write file to buffer
-                    buf = io.BytesIO()
                     chunk = await fp.read(CHUNK_SIZE)
                     while chunk:
                         buf.write(chunk)
-                        try:
-                            chunk = await fp.read(CHUNK_SIZE)
-                        except:
-                            chunk = None
+                        chunk = await fp.read(CHUNK_SIZE)
+    except Exception:  # noqa: E722
+        if not buf.tell():
+            raise FtpProxyError('Unable to download file')
 
-        # Send buffer content to client
-        response = web.StreamResponse()
-        response.content_type = 'application/octet-stream'
-        await response.prepare(request)
-        buf.seek(0)
-        await response.write(buf.read())
-        return response
-
-    except asyncssh.misc.Error as exc:
-        raise AsyncsshError(exc)
-    except OSError:
-        raise ServerUnreachable
+    # Send buffer content to client
+    response = web.StreamResponse()
+    response.content_type = 'application/octet-stream'
+    await response.prepare(request)
+    buf.seek(0)
+    await response.write(buf.read())
+    return response

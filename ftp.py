@@ -9,7 +9,7 @@ from errors import FtpProxyError, ServerUnreachable, MissingMandatoryQueryParame
 
 class AioftpError(FtpProxyError):
     def __init__(self, ftp_error):
-        self.message = '\n'.join([info.strip() for info in ftp_error.info])
+        super().__init__('\n'.join([info.strip() for info in ftp_error.info]))
 
 
 FTP_TIMEOUT = 5
