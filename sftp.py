@@ -67,7 +67,7 @@ async def download(request):
         raise MissingMandatoryQueryParameter('path')
 
     try:
-        async with asyncssh.connect(host, port=port, username=username, password=password, known_hosts=None, keepalive_interval=1) as conn:
+        async with asyncssh.connect(host, port=port, username=username, password=password, known_hosts=None, keepalive_interval=1, keepalive_count_max=60) as conn:
             async with conn.start_sftp_client() as sftp:
                 async with sftp.open(path, 'rb') as fp:
                     response = web.StreamResponse()
