@@ -6,7 +6,8 @@ from utils import parse_headers, asyncio_timeout
 from errors import FtpProxyError, ServerUnreachable, MissingMandatoryQueryParameter
 
 
-SFTP_TIMEOUT = 5
+SFTP_TIMEOUT = 20
+CHUNK_SIZE = 8192
 
 
 class AsyncsshError(FtpProxyError):
@@ -66,16 +67,17 @@ async def download(request):
         raise MissingMandatoryQueryParameter('path')
 
     try:
-        async with asyncssh.connect(host, port=port, username=username, password=password, known_hosts=None,
-                                    keepalive_interval=1, keepalive_count_max=60) as conn:
+        async with asyncssh.connect(host, port=port, username=username, password=password, known_hosts=None) as conn:
             async with conn.start_sftp_client() as sftp:
                 async with sftp.open(path, 'rb') as fp:
                     response = web.StreamResponse()
                     response.content_type = 'application/octet-stream'
                     await response.prepare(request)
 
-                    chunk = await fp.read()
-                    await response.write(chunk)
+                    chunk = await fp.read(CHUNK_SIZE)
+                    while chunk:
+                        await response.write(chunk)
+                        chunk = await fp.read(CHUNK_SIZE)
 
                     return response
 
