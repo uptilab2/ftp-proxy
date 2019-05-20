@@ -75,9 +75,11 @@ async def download(request):
                 async with sftp.open(path, 'rb') as fp:
                     # Write file to buffer
                     chunk = await fp.read(CHUNK_SIZE)
+                    print('initial chunk', chunk)
                     while chunk:
                         buf.write(chunk)
                         chunk = await fp.read(CHUNK_SIZE)
+                        print('next chunk', chunk)
     except Exception:  # noqa: E722
         if not buf.tell():
             raise FtpProxyError('Unable to download file')
